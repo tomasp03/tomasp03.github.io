@@ -2,6 +2,7 @@ let canvasDim = [600, 600];
 let squaresNum = 24;
 let snake = [];
 let direction;
+let food;
 
 class SnakeTile {
     constructor(x, y) {
@@ -28,16 +29,29 @@ class SnakeTile {
     }
 }
 
-function setup() {
-    direction = createVector(0, 1);
-    frameRate(5);
-    createCanvas(600, 600);
-    background(0);
-    snake.push(new SnakeTile(0, 0));
-    snake.push(new SnakeTile(-25, 0));
-    snake.push(new SnakeTile(-50, 0));
-    snake.push(new SnakeTile(-75, 0));
+class Food {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.width = canvasDim[0] / squaresNum;
+        this.height = canvasDim[1] / squaresNum;
+    }
 
+    show() {
+        fill(244, 34, 54);
+        rect(this.x, this.y, this.width, this.height);
+    }
+
+    setPos(x ,y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+function gameOver() {
+    print("END GAME");
+    background(255, 0, 0);
+    noLoop();
 }
 
 function grow() {
@@ -45,6 +59,16 @@ function grow() {
     newTile = new SnakeTile(head.x + direction.x * head.speed, head.y + direction.y * head.speed);
     snake.unshift(newTile);
 }
+
+function setup() {
+    direction = createVector(0, 1);
+    frameRate(5);
+    createCanvas(600, 600);
+    food = new Food(floor(random(squaresNum)) *  (canvasDim[0] / squaresNum), floor(random(squaresNum)) * (canvasDim[1] / squaresNum));
+    background(0);
+    snake.push(new SnakeTile(0, 0));
+}
+
 
 function keyPressed() {
     if (key == 'w') {
@@ -66,12 +90,36 @@ function keyPressed() {
 
 function draw() {
     background(255);
+
+
     head = snake[0];
+
+    if (head.x == food.x && head.y == food.y) {
+        grow();
+        food.setPos(floor(random(squaresNum)) * (canvasDim[0] / squaresNum), floor(random(squaresNum)) * (canvasDim[1] / squaresNum));
+    }
+
+    head = snake[0];
+
     last = snake.pop();
     last.setPos(head.x + direction.x * head.speed, head.y + direction.y * head.speed);
     snake.unshift(last);
 
+    head = snake[0];
+
+    food.show();
+
     snake.forEach(tile => {
         tile.show();
     });
+
+    for (i = 1; i < snake.length; i++) {
+        if (snake[i].x == head.x && snake[i].y == head.y) {
+            gameOver();
+        }
+    }
+
+    if (head.x < 0 || head.y < 0 || head.x >= canvasDim[0] || head.y >= canvasDim[1]) {
+        gameOver();
+    }
 }
